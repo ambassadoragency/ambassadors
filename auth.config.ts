@@ -1,40 +1,25 @@
 import type { NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
 
 export const authConfig = {
-  providers: [
-    Credentials({
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials);
-
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-
-          const user = await prisma.user.findUnique({
-            where: { email },
-          });
-
-          if (!user) return null;
-
-          const passwordsMatch = await bcrypt.compare(password, user.password);
-
-          if (passwordsMatch) {
-            return { id: user.id, email: user.email, name: user.name };
-          }
-        }
-
-        return null;
-      },
-    }),
-  ],
   pages: {
-    signIn: "/auth/login", // Custom login page
+    signIn: "/auth/login",
   },
+  callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isAdminRoute = nextUrl.pathname.startsWith("/dashboard");
+      const isAuthRoute = nextUrl.pathname.startsWith("/auth");
+
+      if (isAdminRoute && !isLoggedIn) {
+        return false;
+      }
+
+      if (isAuthRoute && isLoggedIn) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+
+      return true;
+    },
+  },
+  providers: [],
 } satisfies NextAuthConfig;
