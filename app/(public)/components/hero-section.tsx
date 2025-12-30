@@ -30,7 +30,7 @@ export default function HeroSection({ heroImageUrl }: HeroSectionProps) {
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight">
                 Discover
                 <span className="block text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-cyan-300">
-                  Exceptional Talent
+                  Exceptional Model
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-slate-300 max-w-xl">
